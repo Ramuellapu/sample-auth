@@ -1,0 +1,44 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+
+  ci:
+    name: CI - Test Application
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check index.html
+        run: test -f index.html
+
+      - name: Check dashboard.html
+        run: test -f dashboard.html
+
+      - name: Display files
+        run: ls -la
+
+      - name: CI completed
+        run: echo "CI tests completed successfully"
+
+  cd:
+    name: CD - Deploy to Render
+    needs: ci
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Deploy to Render
+        run: curl -X POST "$RENDER_DEPLOY_HOOK"
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+      - name: Deployment triggered
+        run: echo "Render deployment triggered successfully"

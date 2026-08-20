@@ -28,6 +28,7 @@ jobs:
       - name: CI completed
         run: echo "CI tests completed successfully"
 
+
   cd:
     name: CD - Deploy to Render
     needs: ci
@@ -35,10 +36,18 @@ jobs:
 
     steps:
 
-      - name: Deploy to Render
-        run: curl -X POST "$RENDER_DEPLOY_HOOK"
+      - name: Check Render secret
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "ERROR: RENDER_DEPLOY_HOOK is not configured"
+            exit 1
+          else
+            echo "Render deploy hook is configured"
+          fi
 
-      - name: Deployment triggered
-        run: echo "Render deployment triggered successfully"
+      - name: Deploy to Render
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: curl -X POST "$RENDER_DEPLOY_HOOK"
